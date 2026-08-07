@@ -1,0 +1,125 @@
+
+
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Rozha+One&family=Mukta:wght@400;500;600;700&display=swap');
+
+@theme {
+
+  --color-sun:        #F7C948;  
+  --color-sun-soft:   #FBF0D5;  
+
+
+  --color-wash:        #A9D3E0;  
+  --color-wash-2:       #C9E3EA;  
+
+
+  --color-maroon:      #8C3A34;  
+  --color-forest:       #4C6B4E;  
+  --color-ink:          #3A2E22;  
+
+  --font-display: 'Rozha One', serif;   
+  --font-sans:    'Mukta', sans-serif;  
+}
+
+@layer base {
+  body {
+    background-color: var(--color-sun-soft);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+  }
+
+h1 {
+    font-family: var(--font-display);
+    font-size: clamp(4rem, 8vw, 7rem);
+    font-weight: 400;
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+  }
+
+
+  h2 {
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 400;
+    line-height: 1.05;
+  }
+
+
+  h3 {
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 3vw, 2.5rem);
+    font-weight: 400;
+    line-height: 1.15;
+  }
+
+  p {
+    font-family: var(--font-sans);
+    font-size: 1.125rem; 
+    line-height: 1.6;
+    max-width: 38ch; 
+  }
+}
+
+
+@layer components {
+  .flags {
+    display: flex;
+    align-items: flex-start;
+    height: 34px;
+    overflow: hidden;
+  }
+
+  .flag {
+    width: 26px;
+    height: 22px;
+    clip-path: polygon(0 0, 100% 0, 50% 100%);
+    margin-right: 6px;
+  }
+
+  
+  .blob {
+    border-radius: 62% 38% 41% 59% / 55% 45% 55% 45%;
+    background: radial-gradient(
+      circle at 35% 30%,
+      var(--color-wash) 0%,
+      var(--color-wash-2) 55%,
+      transparent 78%
+    );
+  }
+
+  .blob-2 {
+    border-radius: 45% 55% 60% 40% / 40% 55% 45% 60%;
+    background: radial-gradient(
+      circle at 60% 65%,
+      var(--color-wash-2) 0%,
+      transparent 70%
+    );
+    mix-blend-mode: multiply;
+  }
+
+  .torn {
+  height: 16px; /* Increases vertical height of the jagged edges */
+  width: 100%;
+  background-image: repeating-linear-gradient(
+    -45deg,
+    var(--color-sun-soft) 0 8px,
+    transparent 8px 16px
+  );
+}
+
+
+  .underline-input {
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid var(--color-ink);
+    border-radius: 0;
+  }
+
+  .underline-input:focus {
+    outline: none;
+    border-bottom-color: var(--color-maroon);
+  }
+  .tilt {
+    transform: rotate(-1.2deg);
+  }
+}
