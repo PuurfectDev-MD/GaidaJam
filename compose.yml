@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      # Mount only the source code. 
+      # Do NOT mount the nginx config here, or it will overwrite the one in the image.
+      - ./:/var/www/html 
+    ports:
+      - "8085:80"
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - hacknetwork
+
+  mysql:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: hack_db
+      MYSQL_USER: hack_user
+      MYSQL_PASSWORD: hack_password
+    ports:
+      - "8086:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - hacknetwork
+
+  redis:
+    image: redis:7.0
+    restart: unless-stopped
+    ports:
+      - "8087:6379"
+    networks:
+      - hacknetwork
+
+networks:
+  hacknetwork:
+    driver: bridge
+
+volumes:
+  mysql_data:   
