@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\HackClubController;
+use App\Http\Controllers\ProjectController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -28,9 +29,7 @@ Route::group(['middleware' => ['auth']], function () {
         return view('dashboard');
     })->name('dashboard');
 
-    Route::get('/projects', function () {
-        return view('projects.index');
-    })->name('projects.index');
+    Route::resource('projects', ProjectController::class);
 
     Route::post('/logout', function () {
         Auth::logout();
