@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Project;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class ProjectController extends Controller
 {
@@ -13,7 +14,7 @@ class ProjectController extends Controller
      */
     public function index()
     {
-        return view('projects.index', [
+        return Inertia::render('Projects/Index', [
             'projects' => Project::where('user_id', Auth::id())->get(),
         ]);
     }
@@ -42,7 +43,7 @@ class ProjectController extends Controller
 
         Project::create($validated);
 
-        return redirect()->back()->with('success', 'Project added successfully!');
+        return redirect()->route('projects.index')->with('success', 'Project added successfully!');
     }
 
     /**
@@ -50,7 +51,11 @@ class ProjectController extends Controller
      */
     public function show(Project $project)
     {
-        //
+        abort_unless($project->user_id === Auth::id(), 403);
+
+        return response()->json([
+            'project' => $project,
+        ]);
     }
 
     /**
@@ -66,7 +71,24 @@ class ProjectController extends Controller
      */
     public function update(Request $request, Project $project)
     {
-        //
+        abort_unless($project->user_id === Auth::id(), 403);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'url' => 'nullable|url',
+        ]);
+
+        $project->update($validated);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Project updated successfully!',
+                'project' => $project->fresh(),
+            ]);
+        }
+
+        return redirect()->route('projects.index')->with('success', 'Project updated successfully!');
     }
 
     /**
@@ -74,6 +96,16 @@ class ProjectController extends Controller
      */
     public function destroy(Project $project)
     {
-        //
+        abort_unless($project->user_id === Auth::id(), 403);
+
+        $project->delete();
+
+        if (request()->expectsJson()) {
+            return response()->json([
+                'message' => 'Project deleted successfully!',
+            ]);
+        }
+
+        return redirect()->route('projects.index')->with('success', 'Project deleted successfully!');
     }
 }

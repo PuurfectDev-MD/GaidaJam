@@ -1,59 +1,224 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Hack Club Projects
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Laravel 12 + Inertia.js + React application with Hack Club OAuth login.
 
-## About Laravel
+## Stack
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- PHP 8.2 (FPM)
+- Laravel 12
+- Inertia.js + React
+- MySQL 8
+- Redis 7
+- Nginx
+- Vite
+- Docker Compose
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Prerequisites
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- Docker
+- Docker Compose plugin (`docker compose`)
 
-## Learning Laravel
+## Ports
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+- App: `http://localhost:8085`
+- MySQL: `localhost:8086`
+- Redis: `localhost:8087`
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Quick Start (Docker)
 
-## Laravel Sponsors
+1. Start containers:
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+```bash
+docker compose up -d --build
+```
 
-### Premium Partners
+2. Create environment file:
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+```bash
+cp .env.example .env
+```
 
-## Contributing
+3. Update `.env` for MySQL (required for this compose setup):
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```env
+APP_NAME="Hack Club"
+APP_ENV=local
+APP_DEBUG=true
+APP_URL=http://localhost:8085
 
-## Code of Conduct
+DB_CONNECTION=mysql
+DB_HOST=mysql
+DB_PORT=3306
+DB_DATABASE=hack_db
+DB_USERNAME=hack_user
+DB_PASSWORD=hack_password
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+REDIS_HOST=redis
+REDIS_PORT=6379
 
-## Security Vulnerabilities
+# Optional Vite HMR overrides
+VITE_HMR_HOST=localhost
+VITE_HMR_PORT=5173
+VITE_HMR_PROTOCOL=ws
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+4. Add Hack Club OAuth values in `.env`:
 
-## License
+```env
+HACKCLUB_CLIENT_ID=your_client_id
+HACKCLUB_CLIENT_SECRET=your_client_secret
+HACKCLUB_REDIRECT_URI=http://localhost:8085/auth/hackclub/callback
+HACKCLUB_BASE_URL=https://auth.hackclub.com
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+5. Install PHP and Node dependencies in the `web` container:
+
+```bash
+docker compose exec web composer install
+docker compose exec web npm install
+```
+
+6. Generate app key and run migrations:
+
+```bash
+docker compose exec web php artisan key:generate
+docker compose exec web php artisan migrate
+```
+
+7. Build frontend assets:
+
+```bash
+docker compose exec web npm run build
+```
+
+8. Open the app:
+
+- `http://localhost:8085`
+
+## Development Workflow
+
+Run Vite dev server inside the container:
+
+```bash
+docker compose exec web npm run dev
+```
+
+### Vite HMR (No Hardcoded Docker IP)
+
+The Vite config reads HMR settings from environment variables.
+
+- `VITE_HMR_HOST`: Preferred host for HMR websocket.
+- `VITE_HMR_PORT`: HMR port (default `5173`).
+- `VITE_HMR_PROTOCOL`: `ws` or `wss` (default `ws`).
+
+If `VITE_HMR_HOST` is not set, Vite falls back to hostname derived from `APP_URL`.
+
+Examples:
+
+```env
+# Local Docker setup
+APP_URL=http://localhost:8085
+VITE_HMR_HOST=localhost
+VITE_HMR_PORT=5173
+VITE_HMR_PROTOCOL=ws
+```
+
+```env
+# Remote/staging with HTTPS tunnel
+APP_URL=https://my-app.example.com
+VITE_HMR_HOST=my-app.example.com
+VITE_HMR_PORT=443
+VITE_HMR_PROTOCOL=wss
+```
+
+Useful Laravel commands:
+
+```bash
+docker compose exec web php artisan optimize:clear
+docker compose exec web php artisan migrate
+docker compose exec web php artisan test
+docker compose exec web php artisan route:list
+```
+
+## Stop / Restart
+
+Stop containers:
+
+```bash
+docker compose down
+```
+
+Stop and remove volumes (resets database data):
+
+```bash
+docker compose down -v
+```
+
+Restart with fresh build:
+
+```bash
+docker compose up -d --build
+```
+
+## Troubleshooting
+
+### 1) Permission errors (for example Vite cannot write in `node_modules`)
+
+If files were created by root inside the container, fix ownership from host:
+
+```bash
+sudo chown -R $USER:$USER node_modules storage bootstrap/cache
+```
+
+Then retry:
+
+```bash
+docker compose exec web npm run build
+```
+
+### 2) `php` command not found on host
+
+Run Laravel commands inside container instead:
+
+```bash
+docker compose exec web php artisan test
+```
+
+### 3) Login/OAuth callback errors
+
+Check:
+
+- `HACKCLUB_REDIRECT_URI` exactly matches your OAuth app settings.
+- App URL is `http://localhost:8085`.
+- Callback route is `/auth/hackclub/callback`.
+
+### 4) Database connection issues
+
+Verify `.env` values match compose service names (`mysql`, `redis`) and restart:
+
+```bash
+docker compose restart web
+```
+
+### 5) HMR not reconnecting in browser
+
+Check:
+
+- `APP_URL` matches how you open the app in the browser.
+- `VITE_HMR_HOST` is reachable from your browser.
+- `VITE_HMR_PROTOCOL` is `ws` for local HTTP and `wss` for HTTPS.
+
+## Project Structure (high-level)
+
+- Backend routes: `routes/web.php`
+- Auth controller: `app/Http/Controllers/Auth/HackClubController.php`
+- Inertia middleware: `app/Http/Middleware/HandleInertiaRequests.php`
+- React pages: `resources/js/Pages`
+- React layout: `resources/js/Layouts/AuthenticatedLayout.jsx`
+- Nginx config: `nginx/default.conf`
+- Docker compose: `compose.yml`
+
+## Notes
+
+- The app is configured for Docker-first development.
+- Authentication UI and app pages are Inertia React pages.

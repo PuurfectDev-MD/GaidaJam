@@ -1,9 +1,11 @@
 <?php
 
 use App\Http\Controllers\Auth\HackClubController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProjectController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 Route::get('/', function () {
     if (Auth::check()) {
@@ -14,7 +16,7 @@ Route::get('/', function () {
 })->name('home');
 
 Route::get('/login', function () {
-    return view('auth.login');
+    return Inertia::render('Auth/Login');
 })->name('login');
 
 Route::get('/auth/hackclub', [HackClubController::class, 'redirect'])
@@ -25,9 +27,7 @@ Route::get('/auth/hackclub/callback', [HackClubController::class, 'callback'])
 
 
 Route::group(['middleware' => ['auth']], function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [HomeController::class, 'index'])->name('dashboard');
 
     Route::resource('projects', ProjectController::class);
 
