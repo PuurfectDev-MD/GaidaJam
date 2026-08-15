@@ -18,6 +18,7 @@
 		"db:studio": "drizzle-kit studio"
 	},
 	"devDependencies": {
+		"@rollup/rollup-darwin-arm64": "^4.62.4",
 		"@sveltejs/adapter-vercel": "next",
 		"@sveltejs/kit": "next",
 		"@sveltejs/vite-plugin-svelte": "^7.1.2",
@@ -40,5 +41,10 @@
 	"imports": {
 		"#lib": "./src/lib/index.js",
 		"#lib/*": "./src/lib/*"
+	},
+	"dependencies": {
+		"@supabase/ssr": "^0.12.4",
+		"@supabase/supabase-js": "^2.112.3",
+		"dotenv": "^17.4.2"
 	}
 }

@@ -36,7 +36,7 @@
 <header class="relative z-10 bg-transparent">
     <div class="flex flex-row justify-between p-4 ">
 <h1 class="text-xl font-bold">GaindaJam</h1>
-<button class="rounded-xl bg-red-700 text-white px-3 py-2">Signup</button>
+<a href="/login" class="rounded-xl bg-red-700 text-white px-3 py-2">Signup</a>
 </div>
 </header>
 </div>
