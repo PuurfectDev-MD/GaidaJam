@@ -7,8 +7,20 @@ use Laravel\Socialite\Two\User;
 
 class HackClubProvider extends AbstractProvider
 {
-    protected $scopes = ['openid', 'email', 'name', 'profile', 'slack_id'];
+    protected $scopes = [];
     protected $scopeSeparator = ' ';
+
+    public function __construct($request, $clientId, $clientSecret, $redirectUrl, $guzzle = [])
+    {
+        parent::__construct($request, $clientId, $clientSecret, $redirectUrl, $guzzle);
+
+        $configuredScopes = (string) config('services.hackclub.scopes', 'openid email name profile slack_id');
+
+        $this->scopes = collect(preg_split('/[\s,]+/', $configuredScopes) ?: [])
+            ->filter(fn ($scope) => $scope !== '')
+            ->values()
+            ->all();
+    }
 
     protected function getAuthUrl($state)
     {

@@ -15,6 +15,15 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
+            $table->string('slack_id')->nullable();
+            $table->string('hackclub_id')->nullable()->unique();
+            $table->text('hackclub_access_token')->nullable();
+            $table->text('hackclub_refresh_token')->nullable();
+            $table->dateTime('hackclub_token_expires_at')->nullable();
+            $table->text('hackatime_access_token')->nullable();
+            $table->text('hackatime_refresh_token')->nullable();
+            $table->dateTime('hackatime_token_expires_at')->nullable();
+            $table->string('hackatime_user_id')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();

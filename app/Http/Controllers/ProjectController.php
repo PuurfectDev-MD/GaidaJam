@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Project;
+use App\Models\HackatimeProject;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -14,8 +15,20 @@ class ProjectController extends Controller
      */
     public function index()
     {
+        $user = Auth::user();
+
         return Inertia::render('Projects/Index', [
-            'projects' => Project::where('user_id', Auth::id())->get(),
+            'projects' => Project::where('user_id', Auth::id())
+                ->with('hackatimeProjects')
+                ->get(),
+            'hackatimeProjects' => HackatimeProject::where('user_id', Auth::id())
+                ->orderBy('name')
+                ->get(),
+            'hackatimeConnected' => !empty($user?->hackatime_access_token),
+            'hackatimeConfigured' => !empty(config('services.hackatime.client_id'))
+                && !empty(config('services.hackatime.client_secret')),
+            'hackatimeAuthUrl' => route('auth.hackatime'),
+            'hackatimeDisconnectRoute' => route('auth.hackatime.disconnect'),
         ]);
     }
 
@@ -36,12 +49,24 @@ class ProjectController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'url' => 'nullable|url',
+            'hackatime_project_ids' => 'array',
+            'hackatime_project_ids.*' => 'integer|exists:hackatime_projects,id',
         ]);
 
         // Add the authenticated user's ID
         $validated['user_id'] = Auth::id();
 
-        Project::create($validated);
+        $hackatimeProjectIds = collect($validated['hackatime_project_ids'] ?? [])->values();
+        unset($validated['hackatime_project_ids']);
+
+        $authorizedCount = HackatimeProject::where('user_id', Auth::id())
+            ->whereIn('id', $hackatimeProjectIds)
+            ->count();
+
+        abort_unless($authorizedCount === $hackatimeProjectIds->count(), 403);
+
+        $project = Project::create($validated);
+        $project->hackatimeProjects()->sync($hackatimeProjectIds->all());
 
         return redirect()->route('projects.index')->with('success', 'Project added successfully!');
     }
@@ -54,7 +79,7 @@ class ProjectController extends Controller
         abort_unless($project->user_id === Auth::id(), 403);
 
         return response()->json([
-            'project' => $project,
+            'project' => $project->load('hackatimeProjects'),
         ]);
     }
 
@@ -77,14 +102,26 @@ class ProjectController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'url' => 'nullable|url',
+            'hackatime_project_ids' => 'array',
+            'hackatime_project_ids.*' => 'integer|exists:hackatime_projects,id',
         ]);
 
+        $hackatimeProjectIds = collect($validated['hackatime_project_ids'] ?? [])->values();
+        unset($validated['hackatime_project_ids']);
+
+        $authorizedCount = HackatimeProject::where('user_id', Auth::id())
+            ->whereIn('id', $hackatimeProjectIds)
+            ->count();
+
+        abort_unless($authorizedCount === $hackatimeProjectIds->count(), 403);
+
         $project->update($validated);
+        $project->hackatimeProjects()->sync($hackatimeProjectIds->all());
 
         if ($request->expectsJson()) {
             return response()->json([
                 'message' => 'Project updated successfully!',
-                'project' => $project->fresh(),
+                'project' => $project->fresh()->load('hackatimeProjects'),
             ]);
         }
 
